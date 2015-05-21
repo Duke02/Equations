@@ -14,6 +14,8 @@ using namespace std;
 #ifndef MATHY_H_
 #define MATHY_H_
 
+
+
 vector<double> doFractionalCoefficient(string input) {
 	//Make the denominator and numerator
 	vector<double> output(2);
@@ -49,6 +51,19 @@ vector<double> doFractionalCoefficient(string input) {
 	return output;
 }
 
+double doCoeffOfX(string input) {
+	for(int i = 0; i != input.size(); i++) {
+		char &c = input[i];
+		if(c == 'x')
+			input = input.substr(0, i);
+			break;
+	}
+
+	vector<double> coeff = doFractionalCoefficient(input);
+
+	return coeff[0]/coeff[1];
+}
+
 double log(double n, double base) {
 	return log10(n)/log10(base);
 }
@@ -77,10 +92,15 @@ void doLinear(double startXValue, double endXValue, double xInterval, bool absol
 	double b = yV[0]/yV[1];
 	double k = kV[0]/kV[1];
 
-	cout << "y=" << m << "|x";
-	if(k != 0)
-		cout << "+" << k;
-	cout << "|";
+	cout << "y=" << m;
+	if(absolute){
+		cout << "|x";
+		if(k != 0)
+			cout << "+" << k;
+		cout << "|";
+	} else
+		cout << "x";
+
 	if(b != 0)
 		cout << "+" << b;
 	cout << endl;
@@ -108,7 +128,7 @@ void doExp(double startXValue, double endXValue, double xInterval) {
 	cin >> power;
 
 	int term = 0;
-	vector<double> coefficients(power+1, 1);
+	vector<double> coefficients(abs(power+1), 1);
 
 	for(auto &c : coefficients) {
 		cout << "What is the coefficient of the term with x ^"
@@ -156,14 +176,30 @@ void doLog(double startXValue, double endXValue, double xInterval) {
 
 	double n, base = 0;
 
-	if(nString == "x")
-		xN = true;
-	else
+	for(auto &c : nString) {
+		if(c == 'x')
+			xN = true;
+	}
+
+
+	double nXCoeff = 1;
+	if(!xN)
 		n = stod(nString);
-	if(baseString == "x")
-		xBase = true;
 	else
+		nXCoeff = doCoeffOfX(nString);
+
+	for(auto &c : baseString) {
+		if(c == 'x')
+			xBase = true;
+	}
+
+	double baseXCoeff = 1;
+	if(!xBase)
 		base = stod(baseString);
+	else
+		baseXCoeff = doCoeffOfX(baseString);
+
+
 
 	cout << "y=log" << baseString << "(" << nString << ")" << endl;
 
@@ -174,13 +210,13 @@ void doLog(double startXValue, double endXValue, double xInterval) {
 			break;
 
 		if(!xBase && !xN)
-			y = log(n, base);
+			y = log(n * nXCoeff, base*baseXCoeff);
 		else if(xBase && !xN)
-			y = log(n, x);
+			y = log(n* nXCoeff, x*baseXCoeff);
 		else if(!xBase && xN)
-			y = log(x, base);
+			y = log(x* nXCoeff, base*baseXCoeff);
 		else
-			y = log(x,x);
+			y = log(x* nXCoeff,x*baseXCoeff);
 
 		cout << "y=" << y << " (x=" << x << ")" << endl;
 	}
